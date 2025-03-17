@@ -14,6 +14,8 @@ jobs:
           go-version: 1.21
       - uses: actions/checkout@v2
       - name: "Generate for Golang"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_PAT }}
         run: |
           sudo apt-get install -y protobuf-compiler golang-goprotobuf-dev
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -23,8 +25,12 @@ jobs:
           cd golang
           go mod init github.com/wit360/microservices-proto
           go mod tidy
-          git config --global user.email "wit360@gmail.com"
-          git config --global user.name "wit360"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add .
-          git commit -am "proto update"
-          git push origin main
+          if git status | grep -q "Changes to be committed"; then
+            git commit -m "proto update"
+            git push
+          else
+            echo "No changes to commit"
+          fi
